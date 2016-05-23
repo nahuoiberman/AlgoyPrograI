@@ -1,0 +1,129 @@
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+#include <string.h>
+typedef struct record{
+    char *nombre_;
+    int duracion_;
+    }record_t;
+typedef struct album{
+    record_t **album_;
+    char *nombre_;   
+    int recordnumber_;
+    }album_t;
+typedef struct band{
+    record_t **band_;
+    char *nombre_;
+    int recordnumber_;
+    }band_t;
+typedef struct artist{
+    record_t **artis_;
+    char *nombre_;
+    int recordnumber_;
+    }artist_t;
+typedef struct lista{
+    record_t *lista_;
+    int cant_;
+    }lista_t;
+typedef struct bandas{
+	band_t *bandas_;
+	int cant_;
+	}bandas_t;
+typedef struct artistas{
+	artist_t *artistas_;
+	int cant_;
+	}artistas_t;
+typedef struct albumes{
+	album_t *albumes_;
+	int cant_;
+	}albumes_t;
+
+void agregarbanda(char *banda,bandas_t *bandas,record_t *cancion){
+	int i,cnt=0;
+	for(i=0;i<bandas->cant_;i++){			
+		if(strcmp(banda,bandas->bandas_[i].nombre_)==0){
+			if(bandas->bandas_[i].recordnumber_==0) bandas->bandas_[i].band_=NULL;			
+			bandas->bandas_[i].band_=(record_t **)realloc(bandas->bandas_[i].band_,sizeof(record_t *)*(bandas->bandas_[i].recordnumber_+1));
+			bandas->bandas_[i].band_[bandas->bandas_[i].recordnumber_]=cancion;
+			bandas->bandas_[i].recordnumber_++;
+			printf("entre\n");			
+			cnt=1;
+			}
+	}
+	if(cnt==0){
+		bandas->cant_++;
+		printf("%d\n",bandas->cant_);
+		bandas->bandas_=(band_t *)realloc(bandas->bandas_,sizeof(band_t)*bandas->cant_);
+		bandas->bandas_[bandas->cant_-1].nombre_=(char *)malloc(sizeof(*banda));		
+		strcpy(bandas->bandas_[bandas->cant_-1].nombre_,banda);		
+		bandas->bandas_[bandas->cant_-1].band_=(record_t **)malloc(sizeof(record_t *));
+		bandas->bandas_[bandas->cant_-1].band_[0]=cancion;
+		bandas->bandas_[bandas->cant_-1].recordnumber_=1;
+		}
+	
+}
+		
+		
+void cargar(lista_t *lista,albumes_t *albumes,artistas_t *artistas,bandas_t *bandas){
+    char aux[100];
+    char *ptr;
+    int i=0;
+    fgets(aux,100,stdin);
+    aux[strlen(aux)-1] = '\0';
+    while(strcmp(aux,"#newSong")==0){
+        fgets(aux,100,stdin);
+        lista->lista_=(record_t *)realloc(lista->lista_,sizeof(record_t)*(i+1));
+        ptr=strtok(aux," ");
+        ptr=strtok(NULL,"\n");
+        lista->lista_[i].nombre_=(char *)malloc(sizeof(char)*strlen(ptr));        
+        strcpy(lista->lista_[i].nombre_,ptr);
+		lista->cant_++;		
+		fgets(aux,100,stdin);
+		ptr=strtok(aux," ");
+		ptr=strtok(NULL,"\n");
+		agregarbanda(ptr,bandas,&lista->lista_[i]);		
+		i++;        
+		fgets(aux,100,stdin);
+        aux[strlen(aux)-1] = '\0';
+        }
+    }
+int main(int argc, char *argv[]) {
+    char *tok;
+	int i,j;    
+	lista_t lista;    
+	lista.lista_=NULL;
+	lista.cant_=0;
+    albumes_t albumes;
+    artistas_t artistas;
+    bandas_t bandas;
+	albumes.albumes_=NULL;
+	albumes.cant_=0;
+	artistas.artistas_=NULL;
+	artistas.cant_=0;
+	bandas.bandas_=NULL;
+	bandas.cant_=0;
+	 /*
+    tok=strtok(argv[1],DELIM_I);
+    if(strcmp(tok,LISTSONG)==0) {
+        listSongs();
+    }
+    else if (strcmp(tok,LISTSONG)==0) {
+        listAlbums();
+    }*/
+    cargar(&lista,&albumes,&artistas,&bandas); 		
+	printf("%d\n",bandas.bandas_[0].recordnumber_);	
+	for(i=1;i<bandas.cant_;i++){
+		printf("%s\n",bandas.bandas_[i].nombre_);
+		for(j=0;j<bandas.bandas_[i].recordnumber_;j++) printf("%s\n",bandas.bandas_[i].band_[j]->nombre_);
+		}
+    for(i=0;i<bandas.cant_;i++){
+		free(bandas.bandas_[i].band_);
+		free(bandas.bandas_[i].nombre_);
+		}
+	free(bandas.bandas_);
+	for(i=0;i<lista.cant_;i++){
+		free(lista.lista_[i].nombre_);
+     	}   
+    free(lista.lista_);    
+    return 0;
+    }
